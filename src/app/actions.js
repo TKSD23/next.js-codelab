@@ -8,22 +8,23 @@ import { getFirestore } from "firebase/firestore";
 // use with caution.
 // https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions
 export async function handleReviewFormSubmission(data) {
-    const { app } = await getAuthenticatedAppForUser();
+    // 1. Destructure both app and currentUser (or user)
+    const { app, currentUser } = await getAuthenticatedAppForUser();
+
+    // 2. Check if the user is authenticated on the server.
+    if (!currentUser) {
+        console.error("User must be authenticated to submit a review.");
+        // Stop execution if the user is not authenticated.
+        throw new Error("Authentication required.");
+    }
+
     const db = getFirestore(app);
 
-    const restaurantId = data.get("restaurantId");
-    const text = data.get("text");
-    const rating = data.get("rating");
-    const userId = data.get("userId"); // This is coming from the hidden field
+    await addReviewToRestaurant(db, data.get("restaurantId"), {
+            text: data.get("text"),
+            rating: data.get("rating"),
 
-    console.log("handleReviewFormSubmission - restaurantId:", restaurantId);
-    console.log("handleReviewFormSubmission - text:", text);
-    console.log("handleReviewFormSubmission - rating:", rating);
-    console.log("handleReviewFormSubmission - userId:", userId); // VERY IMPORTANT
-
-    await addReviewToRestaurant(db, restaurantId, {
-      text: text,
-      rating: rating,
-      userId: userId,
+            // 3. Use the server-verified UID instead of the hidden form field.
+            userId: currentUser.uid,
     });
 }
