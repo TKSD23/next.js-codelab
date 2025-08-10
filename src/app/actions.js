@@ -8,14 +8,22 @@ import { getFirestore } from "firebase/firestore";
 // use with caution.
 // https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions
 export async function handleReviewFormSubmission(data) {
-        const { app } = await getAuthenticatedAppForUser();
-        const db = getFirestore(app);
+    const { app } = await getAuthenticatedAppForUser();
+    const db = getFirestore(app);
 
-        await addReviewToRestaurant(db, data.get("restaurantId"), {
-                text: data.get("text"),
-                rating: data.get("rating"),
+    const restaurantId = data.get("restaurantId");
+    const text = data.get("text");
+    const rating = data.get("rating");
+    const userId = data.get("userId"); // This is coming from the hidden field
 
-                // This came from a hidden form field.
-                userId: data.get("userId"),
-        });
+    console.log("handleReviewFormSubmission - restaurantId:", restaurantId);
+    console.log("handleReviewFormSubmission - text:", text);
+    console.log("handleReviewFormSubmission - rating:", rating);
+    console.log("handleReviewFormSubmission - userId:", userId); // VERY IMPORTANT
+
+    await addReviewToRestaurant(db, restaurantId, {
+      text: text,
+      rating: rating,
+      userId: userId,
+    });
 }
